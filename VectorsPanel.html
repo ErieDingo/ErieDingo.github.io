@@ -11,6 +11,7 @@
       </canvas>
     </div>
   </div>
+<script src="vectorsPanel.js"></script>
 <script>
 
 var LIFESPAN = 30;
@@ -123,13 +124,14 @@ function putVectorLabel(lineLabel, isVector, line, phi, faceVector) {
 // component.
   var labelWidth = ctx.measureText(lineLabel).width;
   var labelLocation = getLabelLocation(labelWidth,phi,line,faceVector);  
-  if ((showComponents && isVector && 
+  if ((showComponents == "1" && isVector && 
     !triangle.contains(labelLocation) &&
     !enclosure.contains(labelLocation)) ||
     labelLocation.x < pixelsInFont ||
     (labelLocation.x + labelWidth * pixelsInFont) > thisCanvas.width)
     {
-       labelLocation = getLabelLocation(labelWidth,phi,line,!faceVector);
+      labelAreaList.pop();
+	  labelLocation = getLabelLocation(labelWidth,phi,line,!faceVector);
     }
   ctx.fillText(lineLabel,labelLocation.x,labelLocation.y);
   return;
@@ -138,13 +140,14 @@ function putVectorLabel(lineLabel, isVector, line, phi, faceVector) {
 function getLabelLocation(labelWidth, phi, line, faceVector) {
   var xOffset=0.0, yOffset=0.0, deltaX, deltaY;
   var labelLocation = new Point(xOffset, yOffset);	
+  var verticalAdjust = " ";
   deltaX = line.x2 - line.x1;
   deltaY = line.y2 - line.y1;
   if (!faceVector ){
     if ((deltaX)<0){
       if ((deltaY)>0){
-	xOffset = -(offset * Math.sin(phi));   
-	yOffset = fontHeight - fontDescent - (offset * Math.cos(phi));
+	    xOffset = -(offset * Math.sin(phi));   
+	    yOffset = fontHeight - fontDescent - (offset * Math.cos(phi));
       }
       else{
         xOffset = offset * Math.sin(phi);   
@@ -166,21 +169,21 @@ function getLabelLocation(labelWidth, phi, line, faceVector) {
   if (faceVector){           
     if ((deltaX)<0){
       if ((deltaY)>0){
-	xOffset = offset * Math.sin(phi);   
+	    xOffset = offset * Math.sin(phi);   
         yOffset = offset * Math.cos(phi);
       }
       else{
         xOffset = -(offset * Math.sin(phi));   
-	yOffset = fontAscent -(offset * Math.cos(phi));
+	    yOffset = fontAscent -(offset * Math.cos(phi));
       }
     }
     else{
       if ((deltaY)>0){
-	xOffset = offset * Math.sin(phi);
-	yOffset = fontAscent +(offset * Math.cos(phi));
+	    xOffset = offset * Math.sin(phi);
+	    yOffset = fontAscent +(offset * Math.cos(phi));
       }
       else{
-	xOffset = -offset * Math.sin(phi);
+	    xOffset = -offset * Math.sin(phi);
         yOffset = -(offset * Math.cos(phi));
       } 
     }
@@ -191,7 +194,8 @@ function getLabelLocation(labelWidth, phi, line, faceVector) {
     (deltaX/2.0) + xOffset + line.x1;
   labelLocation.y = 
     (deltaY/2.0) + yOffset + line.y1;
-  return labelLocation;
+  addLabelArea(labelLocation, labelWidth, line);
+	return labelLocation;
 }
 
 function getVectorText(i,length,angle){
@@ -336,7 +340,7 @@ var dashLength = w/100;
 if(dashLength < 5) dashLength=5;
 
 var ctx=thisCanvas.getContext("2d");
-var pixelsInFont = ctx.font.slice(0,ctx.font.indexOf("px"));
+var pixelsInFont = Number(ctx.font.slice(0,ctx.font.indexOf("px")));
 fontHeight = 1.0 * pixelsInFont;
 fontAscent = 0.8 * pixelsInFont;
 fontDescent = 0.2 * pixelsInFont;
@@ -395,6 +399,7 @@ var radians = new Array();
 var enclosure = new Polygon();
 var triangle = new Polygon();	
 var line = new Line(0,0,0,0);
+var labelAreaList = [];
 
 for (var j = 0; j < rowsInSet[lastSetIndex];j++){
   vectorLength = tableSets[lastSetIndex][j][0];
